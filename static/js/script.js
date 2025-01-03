@@ -13,7 +13,7 @@ document.body.appendChild(renderer.domElement);
 
 /* ------------------ Управление камерой ------------------ */
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; // Плавное управление
+controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 
 /* ------------------ Свет ------------------ */
@@ -54,7 +54,7 @@ scene.add(sunLight);
 
 /* ------------------ Параметры города ------------------ */
 let cityParams = {
-  gridSize: 15,     // "радиус" карты (от -gridSize до gridSize)
+  gridSize: 15,     // "радиус" карты
   maxHeight: 15,    // максимальная высота зданий
   density: 0.5,     // плотность зданий
   greenSpace: 0.3,  // доля парков
@@ -78,7 +78,7 @@ function createVehicle() {
   const bodyGeometry = new THREE.BoxGeometry(0.8, 0.4, 0.4);
   const bodyMaterial = new THREE.MeshPhongMaterial({
     color: new THREE.Color().setHSL(Math.random(), 0.8, 0.5),
-    emissive: 0x000000 // Убираем свечение
+    emissive: 0x000000
   });
   const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
   body.castShadow = true;
@@ -129,29 +129,25 @@ function createVehicle() {
   let dir = new THREE.Vector3(0, 0, 0);
 
   if (chosenRoad.direction === 'vertical') {
-    // Машина стоит на X = position, Z — случайно вдоль дороги
     x = chosenRoad.position;
     z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 2);
-    // Движемся вдоль оси Z (вверх или вниз)
     dir.z = Math.random() < 0.5 ? 1 : -1;
-    vehicle.rotation.y = dir.z > 0 ? -Math.PI / 2 : Math.PI / 2; // Изменено для бокового движения
+    vehicle.rotation.y = dir.z > 0 ? -Math.PI / 2 : Math.PI / 2;
   } else {
-    // Горизонтальная дорога: Z = position, X — случайно вдоль дороги
     z = chosenRoad.position;
     x = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 2);
-    // Движемся вдоль оси X (влево или вправо)
     dir.x = Math.random() < 0.5 ? 1 : -1;
-    vehicle.rotation.y = dir.x > 0 ? 0 : Math.PI; // Изменено для бокового движения
+    vehicle.rotation.y = dir.x > 0 ? 0 : Math.PI;
   }
 
   vehicle.position.set(x, 0.2, z);
 
   // Сохраняем скорость и направление в userData
   vehicle.userData = {
-    speed: 0.05 + Math.random() * 0.05, // Разнообразие скоростей
+    speed: 0.05 + Math.random() * 0.05,
     direction: dir,
-    turning: false, // Флаг поворота
-    targetDirection: dir.clone() // Целевая направление при повороте
+    turning: false,
+    targetDirection: dir.clone()
   };
 
   return vehicle;
@@ -159,7 +155,7 @@ function createVehicle() {
 
 /* ------------------ Создаём несколько машин ------------------ */
 const vehicles = [];
-const initialVehicleCount = 10; // Увеличено количество начальных машин
+const initialVehicleCount = 10;
 for (let i = 0; i < initialVehicleCount; i++) {
   const vehicle = createVehicle();
   vehicles.push(vehicle);
@@ -168,7 +164,7 @@ for (let i = 0; i < initialVehicleCount; i++) {
 
 /* ------------------ Функция для добавления дополнительных машин ------------------ */
 function addMoreVehicles() {
-  const newVehiclesCount = 5; // Количество добавляемых машин за раз
+  const newVehiclesCount = 5;
   for (let i = 0; i < newVehiclesCount; i++) {
     const vehicle = createVehicle();
     vehicles.push(vehicle);
@@ -183,23 +179,18 @@ function updateVehicles() {
     const dir = vehicle.userData.direction.clone();
     const speed = vehicle.userData.speed;
 
-    // Движение
     vehicle.position.addScaledVector(dir, speed);
 
-    // Границы карты
     const bounds = cityParams.gridSize;
     if (Math.abs(vehicle.position.x) > bounds || Math.abs(vehicle.position.z) > bounds) {
-      // Разворачиваемся
       vehicle.userData.direction.multiplyScalar(-1);
 
-      // Обновляем ориентацию машины
       if (Math.abs(vehicle.userData.direction.x) > 0) {
         vehicle.rotation.y = vehicle.userData.direction.x > 0 ? 0 : Math.PI;
       } else {
         vehicle.rotation.y = vehicle.userData.direction.z > 0 ? -Math.PI / 2 : Math.PI / 2;
       }
 
-      // Корректировка позиции, чтобы остаться на дороге
       if (Math.abs(vehicle.userData.direction.x) > 0) {
         vehicle.position.x = Math.sign(vehicle.position.x) * bounds;
       } else {
@@ -207,8 +198,7 @@ function updateVehicles() {
       }
     }
 
-    // Проверяем, не пересекли ли другую дорогу — если да, поворачиваем
-    if (!vehicle.userData.turning && Math.random() < 0.005) { // Уменьшена вероятность случайного поворота
+    if (!vehicle.userData.turning && Math.random() < 0.005) {
       // Пересечение: близко к вертикальной и горизонтальной дорогам
       const nearVertical = roads
         .filter(r => r.direction === 'vertical')
@@ -218,7 +208,6 @@ function updateVehicles() {
         .some(r => Math.abs(vehicle.position.z - r.position) < 0.5);
 
       if (nearVertical && nearHorizontal) {
-        // Случайный выбор нового направления, отличного от текущего
         const possibleDirections = [
           new THREE.Vector3(1, 0, 0),
           new THREE.Vector3(-1, 0, 0),
@@ -231,18 +220,16 @@ function updateVehicles() {
           vehicle.userData.targetDirection.copy(newDir);
           vehicle.userData.turning = true;
 
-          // Анимация поворота с использованием Tween.js
           new TWEEN.Tween(vehicle.rotation)
             .to({
               y: newDir.x !== 0 ? (newDir.x > 0 ? 0 : Math.PI) :
                                    (newDir.z > 0 ? -Math.PI / 2 : Math.PI / 2)
-            }, 500) // Время поворота в миллисекундах
+            }, 500)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {})
             .onComplete(() => {
               vehicle.userData.direction.copy(newDir);
               vehicle.userData.turning = false;
-              // Корректировка позиции, чтобы остаться на дороге после поворота
               if (newDir.x !== 0) {
                 vehicle.position.x = THREE.MathUtils.clamp(vehicle.position.x, -bounds, bounds);
               } else {
@@ -254,7 +241,6 @@ function updateVehicles() {
       }
     }
 
-    // Обновление Tween.js
     TWEEN.update();
 
     // Обновление состояния фар и материалов окон
@@ -273,8 +259,7 @@ function updateVehicles() {
     if (object.type === 'Mesh' && object.parent && object.parent.type === 'Mesh') {
       if (object.userData.glowsAtNight) {
         object.material.emissive.setHex(isNight ? 0xffffaa : 0x000000);
-        // В Three.js r128 emissiveIntensity не поддерживается
-        // object.material.emissiveIntensity = isNight ? 1.0 : 0;
+
       }
     }
   });
@@ -301,7 +286,7 @@ function addStreetlight() {
   light.castShadow = true;
   lightPole.add(light);
 
-  // Ставим фонарь в случайном месте, избегая дорог
+  // Ставим фонарь
   let position;
   let attempts = 0;
   do {
@@ -309,7 +294,7 @@ function addStreetlight() {
     const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 2);
     position = new THREE.Vector3(x, 0, z);
     attempts++;
-    if (attempts > 100) break; // Предотвращаем бесконечный цикл
+    if (attempts > 100) break;
   } while (isOnRoad(position));
 
   lightPole.position.copy(position);
@@ -328,7 +313,7 @@ function removeRandomStreetlight() {
 
 /* ------------------ Проверка, находится ли позиция на дороге ------------------ */
 function isOnRoad(position) {
-  const buffer = 1; // Допустимое отклонение от дороги
+  const buffer = 1;
   for (let road of roads) {
     if (road.direction === 'vertical') {
       if (Math.abs(position.x - road.position) < buffer) {
@@ -350,7 +335,7 @@ function createBuilding(x, z, height) {
     color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.05, 0.5, 0.5),
     specular: 0x555555,
     shininess: 30,
-    emissive: 0x000000 // Убираем свечение
+    emissive: 0x000000
   });
   const building = new THREE.Mesh(geometry, material);
   building.position.set(x, height / 2, z);
@@ -361,7 +346,7 @@ function createBuilding(x, z, height) {
   const windowGeom = new THREE.PlaneGeometry(0.2, 0.2);
   const windowMat = new THREE.MeshPhongMaterial({
     color: 0xffffaa,
-    emissive: 0xffffff, // Яркий эмиссивный цвет
+    emissive: 0xffffff,
     emissiveIntensity: 5
   });
   for (let y = 1; y < height; y += 0.5) {
@@ -418,10 +403,7 @@ function createPark(x, z) {
 
 /* ------------------ Функции для дорог ------------------ */
 function createRoad(road) {
-  /*
-    Сделаем дорогу небольшой «полосой» шириной 2.
-    Длина — в пределах размера карты * 2.
-  */
+
   const roadWidth = 2;
   const length = cityParams.gridSize * 2;
 
@@ -442,7 +424,6 @@ function createRoad(road) {
   mesh.position.set(posX, 0.01, posZ);
   scene.add(mesh);
 
-  // Разметка (простая белая полоса)
   const lineWidth = 0.1;
   let lineGeom;
   if (road.direction === 'horizontal') {
@@ -459,7 +440,7 @@ function createRoad(road) {
 
 /* ------------------ Генерация города ------------------ */
 function generateCity() {
-  // Удаляем объекты, кроме «главных» (солнце, луна, свет и т.п.)
+  // Удаляем объекты
   while (scene.children.length > 5) {
     scene.remove(scene.children[5]);
   }
@@ -476,7 +457,6 @@ function generateCity() {
   // Создаём все дороги из массива
   roads.forEach(road => createRoad(road));
 
-  // Раскидываем здания и парки случайно по карте, избегая дорог
   for (let i = 0; i < 200; i++) {
     const x = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 2);
     const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 2);
@@ -484,7 +464,7 @@ function generateCity() {
     // Проверяем, не находится ли позиция на дороге
     const position = new THREE.Vector3(x, 0, z);
     if (isOnRoad(position)) {
-      continue; // Пропускаем, если на дороге
+      continue;
     }
 
     // С какой-то вероятностью — парк, с какой-то — здание
@@ -529,8 +509,6 @@ function updateDayNightCycle() {
     if (object.type === 'Mesh' && object.parent && object.parent.type === 'Mesh') {
       if (object.userData.glowsAtNight) {
         object.material.emissive.setHex(isNight ? 0xffffaa : 0x000000);
-        // В Three.js r128 emissiveIntensity не поддерживается
-        // object.material.emissiveIntensity = isNight ? 1.0 : 0;
       }
     }
   });
@@ -545,7 +523,7 @@ camera.lookAt(0, 0, 0);
 function animate() {
   requestAnimationFrame(animate);
   updateVehicles();
-  controls.update(); // Обновление управления камерой
+  controls.update();
   renderer.render(scene, camera);
 }
 
