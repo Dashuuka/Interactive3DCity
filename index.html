@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="css/style.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+</head>
+<body>
+
+  <div id="controls">
+    <h3>City Generator Controls</h3>
+    <div>
+      <label>Building Density:</label>
+      <input type="range" min="1" max="100" value="50" class="slider" id="densitySlider">
+    </div>
+    <div>
+      <label>Building Height:</label>
+      <input type="range" min="1" max="100" value="150" class="slider" id="heightSlider">
+    </div>
+    <div>
+      <label>Green Spaces:</label>
+      <input type="range" min="1" max="100" value="30" class="slider" id="greenSlider">
+    </div>
+    <div>
+      <label>Map Size:</label>
+      <input type="range" min="10" max="50" value="15" class="slider" id="mapSizeSlider">
+    </div>
+    <div>
+      <label>Time of Day:</label>
+      <input type="range" min="0" max="24" value="12" class="slider" id="timeSlider">
+    </div>
+    <button onclick="addStreetlight()">Add Streetlight</button>
+    <button onclick="removeRandomStreetlight()">Remove Random Streetlight</button>
+    <button onclick="addMoreVehicles()">Add More Vehicles</button>
+  </div>
+
+  <script src="js/script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+canvas { width: 100%; height: 100%; }
+
+#controls {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.slider {
+    width: 200px;
+    margin: 10px 0;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+}
+
+button {
+    margin: 5px 0;
+    padding: 5px 10px;
+    font-size: 14px;
+}
