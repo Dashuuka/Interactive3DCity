@@ -44,6 +44,7 @@ const sunLight = new THREE.DirectionalLight(0xffffff, 1);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 2048;
 sunLight.shadow.mapSize.height = 2048;
+sunLight.shadow.radius = 4;
 sunLight.shadow.camera.near = 0.5;
 sunLight.shadow.camera.far = 100;
 sunLight.shadow.camera.left = -20;
@@ -313,7 +314,7 @@ function removeRandomStreetlight() {
 
 /* ------------------ Проверка, находится ли позиция на дороге ------------------ */
 function isOnRoad(position) {
-  const buffer = 1;
+  const buffer = 1.4;
   for (let road of roads) {
     if (road.direction === 'vertical') {
       if (Math.abs(position.x - road.position) < buffer) {
@@ -475,6 +476,7 @@ function generateCity() {
       scene.add(createBuilding(x, z, height));
     }
   }
+  generateClouds();
 }
 
 /* ------------------ День-ночь ------------------ */
@@ -523,13 +525,98 @@ camera.lookAt(0, 0, 0);
 function animate() {
   requestAnimationFrame(animate);
   updateVehicles();
+  animateClouds();
   controls.update();
+
   renderer.render(scene, camera);
 }
 
 generateCity();
+generateClouds();
 updateDayNightCycle();
 animate();
+/* ------------------ Облака ------------------ */
+const cloudMaterial = new THREE.MeshPhongMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: 0.6, // Устанавливаем полупрозрачность
+});
+
+function createCloud(x, y, z) {
+  const cloud = new THREE.Group();
+  cloud.name = 'cloud'; // Указываем, что это облако
+
+  const cloudMaterial = new THREE.MeshPhongMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.9,
+  });
+
+  const cloudBlocks = [];
+  const length = 5 + Math.floor(Math.random() * 5);
+  const width = 2 + Math.floor(Math.random() * 2);
+
+  for (let l = -Math.floor(length / 2); l <= Math.floor(length / 2); l++) {
+    for (let w = -Math.floor(width / 2); w <= Math.floor(width / 2); w++) {
+      const heightOffset = Math.random() < 0.3 ? 1 : 0;
+      cloudBlocks.push({ offsetX: l, offsetY: heightOffset, offsetZ: w });
+    }
+  }
+
+  cloudBlocks.forEach((block) => {
+    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const cube = new THREE.Mesh(cubeGeometry, cloudMaterial);
+    cube.position.set(block.offsetX, block.offsetY, block.offsetZ);
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+    cloud.add(cube);
+  });
+
+  cloud.position.set(x, y, z);
+  cloud.userData = { speed: 0.01 + Math.random() * 0.02 };
+  return cloud;
+}
+
+function generateClouds() {
+  const cloudCount = 5;
+  for (let i = 0; i < cloudCount; i++) {
+    const x = THREE.MathUtils.randFloatSpread(cityParams.gridSize );
+    const y = 15 + Math.random() * 10;
+    const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize );
+
+    const cloud = createCloud(x, y, z);
+    scene.add(cloud);
+  }
+}
+
+function createNewCloud() {
+  const x = -cityParams.gridSize ;
+  const y = 15 + Math.random() * 10;
+  const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize);
+
+  const cloud = createCloud(x, y, z);
+  scene.add(cloud);
+}
+
+function animateClouds() {
+  const cloudsToRemove = [];
+
+  scene.traverse((object) => {
+    if (object.name === 'cloud' && object.userData.speed) {
+      object.position.x += object.userData.speed;
+
+      if (object.position.x > cityParams.gridSize ) {
+        cloudsToRemove.push(object);
+      }
+    }
+  });
+
+  cloudsToRemove.forEach((cloud) => {
+    scene.remove(cloud);
+    createNewCloud();
+  });
+}
+
 
 /* ------------------ Обработка изменения размера окна ------------------ */
 window.addEventListener('resize', function () {
