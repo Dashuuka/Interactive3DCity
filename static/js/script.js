@@ -536,41 +536,38 @@ generateClouds();
 updateDayNightCycle();
 animate();
 /* ------------------ Облака ------------------ */
-const cloudMaterial = new THREE.MeshPhongMaterial({
-  color: 0xffffff,
-  transparent: true,
-  opacity: 0.6, // Устанавливаем полупрозрачность
-});
-
 function createCloud(x, y, z) {
   const cloud = new THREE.Group();
-  cloud.name = 'cloud'; // Указываем, что это облако
+  cloud.name = "cloud";
 
   const cloudMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.7, // Полупрозрачность
   });
 
-  const cloudBlocks = [];
-  const length = 5 + Math.floor(Math.random() * 5);
-  const width = 2 + Math.floor(Math.random() * 2);
+  // Генерация облака из сфер
+  const cloudParts = 5 + Math.floor(Math.random() * 10); // Количество сфер
+  for (let i = 0; i < cloudParts; i++) {
+    const sphereGeometry = new THREE.SphereGeometry(
+      1 + Math.random() * 1.5, // Разный размер сфер
+      16,
+      16
+    );
+    const sphere = new THREE.Mesh(sphereGeometry, cloudMaterial);
 
-  for (let l = -Math.floor(length / 2); l <= Math.floor(length / 2); l++) {
-    for (let w = -Math.floor(width / 2); w <= Math.floor(width / 2); w++) {
-      const heightOffset = Math.random() < 0.3 ? 1 : 0;
-      cloudBlocks.push({ offsetX: l, offsetY: heightOffset, offsetZ: w });
-    }
+    // Случайное расположение в пределах небольшого диапазона
+    sphere.position.set(
+      Math.random() * 5 - 2.5,
+      Math.random() * 2 - 1,
+      Math.random() * 3 - 1.5
+    );
+
+    sphere.castShadow = true;
+    sphere.receiveShadow = true;
+
+    cloud.add(sphere);
   }
-
-  cloudBlocks.forEach((block) => {
-    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const cube = new THREE.Mesh(cubeGeometry, cloudMaterial);
-    cube.position.set(block.offsetX, block.offsetY, block.offsetZ);
-    cube.castShadow = true;
-    cube.receiveShadow = true;
-    cloud.add(cube);
-  });
 
   cloud.position.set(x, y, z);
   cloud.userData = { speed: 0.01 + Math.random() * 0.02 };
@@ -578,11 +575,11 @@ function createCloud(x, y, z) {
 }
 
 function generateClouds() {
-  const cloudCount = 5;
+  const cloudCount = 7; // Увеличено количество облаков
   for (let i = 0; i < cloudCount; i++) {
-    const x = THREE.MathUtils.randFloatSpread(cityParams.gridSize );
-    const y = 15 + Math.random() * 10;
-    const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize );
+    const x = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 3);
+    const y = 15 + Math.random() * 10; // Высота облаков
+    const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 3);
 
     const cloud = createCloud(x, y, z);
     scene.add(cloud);
@@ -590,9 +587,9 @@ function generateClouds() {
 }
 
 function createNewCloud() {
-  const x = -cityParams.gridSize ;
+  const x = -cityParams.gridSize * 3;
   const y = 15 + Math.random() * 10;
-  const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize);
+  const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 3);
 
   const cloud = createCloud(x, y, z);
   scene.add(cloud);
@@ -602,10 +599,11 @@ function animateClouds() {
   const cloudsToRemove = [];
 
   scene.traverse((object) => {
-    if (object.name === 'cloud' && object.userData.speed) {
+    if (object.name === "cloud" && object.userData.speed) {
       object.position.x += object.userData.speed;
 
-      if (object.position.x > cityParams.gridSize ) {
+      // Удаление облаков, которые вышли за границу
+      if (object.position.x > cityParams.gridSize * 3) {
         cloudsToRemove.push(object);
       }
     }
@@ -616,7 +614,6 @@ function animateClouds() {
     createNewCloud();
   });
 }
-
 
 /* ------------------ Обработка изменения размера окна ------------------ */
 window.addEventListener('resize', function () {
