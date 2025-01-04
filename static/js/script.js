@@ -543,20 +543,18 @@ function createCloud(x, y, z) {
   const cloudMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: 0.7, // Полупрозрачность
+    opacity: 0.45,
   });
 
-  // Генерация облака из сфер
-  const cloudParts = 5 + Math.floor(Math.random() * 10); // Количество сфер
+  const cloudParts = 5 + Math.floor(Math.random() * 10);
   for (let i = 0; i < cloudParts; i++) {
     const sphereGeometry = new THREE.SphereGeometry(
-      1 + Math.random() * 1.5, // Разный размер сфер
+      1 + Math.random() * 1.5,
       16,
       16
     );
     const sphere = new THREE.Mesh(sphereGeometry, cloudMaterial);
 
-    // Случайное расположение в пределах небольшого диапазона
     sphere.position.set(
       Math.random() * 5 - 2.5,
       Math.random() * 2 - 1,
@@ -575,11 +573,11 @@ function createCloud(x, y, z) {
 }
 
 function generateClouds() {
-  const cloudCount = 7; // Увеличено количество облаков
+  const cloudCount = 6;
   for (let i = 0; i < cloudCount; i++) {
-    const x = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 3);
-    const y = 15 + Math.random() * 10; // Высота облаков
-    const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 3);
+    const x = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 1.1);
+    const y = 15 + Math.random() * 10;
+    const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize  * 1.1);
 
     const cloud = createCloud(x, y, z);
     scene.add(cloud);
@@ -587,9 +585,9 @@ function generateClouds() {
 }
 
 function createNewCloud() {
-  const x = -cityParams.gridSize * 3;
+  const x = -cityParams.gridSize * 1.1;
   const y = 15 + Math.random() * 10;
-  const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 3);
+  const z = THREE.MathUtils.randFloatSpread(cityParams.gridSize * 1.1 );
 
   const cloud = createCloud(x, y, z);
   scene.add(cloud);
@@ -602,8 +600,7 @@ function animateClouds() {
     if (object.name === "cloud" && object.userData.speed) {
       object.position.x += object.userData.speed;
 
-      // Удаление облаков, которые вышли за границу
-      if (object.position.x > cityParams.gridSize * 3) {
+      if (object.position.x > cityParams.gridSize  * 1.1) {
         cloudsToRemove.push(object);
       }
     }
